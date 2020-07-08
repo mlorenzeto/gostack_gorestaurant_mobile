@@ -46,7 +46,7 @@ export const FoodContent = styled.View`
 `;
 
 export const FoodTitle = styled.Text`
-  font-family: 'Poppins-Regular';
+  font-family: 'Poppins-Medium';
   font-weight: 600;
   font-size: 20px;
   line-height: 32px;
@@ -64,7 +64,7 @@ export const FoodDescription = styled.Text`
 `;
 
 export const FoodPricing = styled.Text`
-  font-family: 'Poppins-Regular';
+  font-family: 'Roboto-Regular';
   font-style: normal;
   font-weight: normal;
   font-size: 24px;

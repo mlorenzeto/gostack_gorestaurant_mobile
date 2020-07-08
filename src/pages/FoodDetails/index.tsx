@@ -5,7 +5,7 @@ import React, {
   useMemo,
   useLayoutEffect,
 } from 'react';
-import { Image } from 'react-native';
+import { Image, Alert } from 'react-native';
 
 import Icon from 'react-native-vector-icons/Feather';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
@@ -74,6 +74,21 @@ const FoodDetails: React.FC = () => {
   useEffect(() => {
     async function loadFood(): Promise<void> {
       // Load a specific food with extras based on routeParams id
+      api.get<Food>(`foods/${routeParams.id}`).then(response => {
+        const formattedFood = {
+          ...response.data,
+          formattedPrice: formatValue(response.data.price),
+        };
+
+        const formattedExtras = formattedFood.extras.map(extra => {
+          return {
+            ...extra,
+            quantity: 0,
+          };
+        });
+        setFood(formattedFood);
+        setExtras(formattedExtras);
+      });
     }
 
     loadFood();
@@ -81,30 +96,85 @@ const FoodDetails: React.FC = () => {
 
   function handleIncrementExtra(id: number): void {
     // Increment extra quantity
+    const editedExtras = extras.map(extra => {
+      return {
+        ...extra,
+        quantity: extra.id === id ? extra.quantity + 1 : extra.quantity,
+      };
+    });
+
+    setExtras(editedExtras);
   }
 
   function handleDecrementExtra(id: number): void {
     // Decrement extra quantity
+    const editedExtras = extras.map(extra => {
+      return {
+        ...extra,
+        quantity:
+          extra.id === id && extra.quantity > 0
+            ? extra.quantity - 1
+            : extra.quantity,
+      };
+    });
+
+    setExtras(editedExtras);
   }
 
   function handleIncrementFood(): void {
     // Increment food quantity
+    const editedFoodQuantity = foodQuantity + 1;
+
+    setFoodQuantity(editedFoodQuantity);
   }
 
   function handleDecrementFood(): void {
     // Decrement food quantity
+    const editedFoodQuantity =
+      foodQuantity > 1 ? foodQuantity - 1 : foodQuantity;
+
+    setFoodQuantity(editedFoodQuantity);
   }
 
-  const toggleFavorite = useCallback(() => {
+  const toggleFavorite = useCallback(async () => {
     // Toggle if food is favorite or not
+    if (!isFavorite) {
+      await api.post('favorites', food);
+    } else {
+      await api.delete(`favorites/${food.id}`);
+    }
+
+    setIsFavorite(!isFavorite);
   }, [isFavorite, food]);
 
   const cartTotal = useMemo(() => {
     // Calculate cartTotal
+    const extrasValue = extras.reduce((acumulator, currentValue) => {
+      acumulator += currentValue.quantity * currentValue.value;
+
+      return acumulator;
+    }, 0);
+
+    const foodTotal = extrasValue + food.price * 1;
+
+    const total = foodQuantity * foodTotal;
+
+    return formatValue(total);
   }, [extras, food, foodQuantity]);
 
   async function handleFinishOrder(): Promise<void> {
     // Finish the order and save on the API
+    const order = {
+      ...food,
+      total_price: cartTotal,
+      quantity: foodQuantity,
+    };
+
+    await api.post('orders', order);
+
+    Alert.alert('Pedido realizado com sucesso!');
+
+    navigation.navigate('Orders');
   }
 
   // Calculate the correct icon name

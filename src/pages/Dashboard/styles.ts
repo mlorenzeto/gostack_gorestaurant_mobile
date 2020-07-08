@@ -122,7 +122,7 @@ export const FoodDescription = styled.Text`
 `;
 
 export const FoodPricing = styled.Text`
-  font-family: 'Poppins-Regular';
+  font-family: 'Roboto-Regular';
   font-style: normal;
   font-weight: normal;
   font-size: 18px;
